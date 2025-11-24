@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breeze</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+  <div class="app-background"></div>
+
+  <div id="app">
+    <!-- Dark Mode Toggle at Top -->
+    <div class="top-controls">
+      <label class="toggle-switch">
+        <input type="checkbox" id="dark-mode-toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Dark Mode</span>
+      </label>
+    </div>
+
+    <div class="landing-container">
+      <header id="main-header">
+        <h1>Breeze</h1>
+        <p>Take a deep breath</p>
+      </header>
+
+      <main>
+        <div class="search-section">
+          <div class="search-wrapper">
+            <div class="search-container">
+              <div class="search-icon-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
+              <input type="text" id="location-input" placeholder="Search city..." autocomplete="off" />
+              <button id="locate-btn" title="Use my location">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                </svg>
+              </button>
+              <div id="suggestions-list" class="suggestions-dropdown hidden"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Live Ticker Section -->
+    <section class="ticker-section" id="ticker-section">
+      <div class="ticker-container">
+        <h3 class="ticker-title">
+          <i data-lucide="globe"></i>
+          Live Air Quality Around the World
+        </h3>
+        <div class="cities-ticker">
+          <div class="ticker-track" id="ticker-track">
+            <div class="ticker-loading">Loading global air quality data...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <p>Analyzing atmosphere...</p>
+      </div>
+
+      <div id="error-message" class="hidden"></div>
+
+      <div id="dashboard" class="hidden">
+        <!-- Dashboard Controls -->
+        <div class="dashboard-controls">
+          <button id="share-btn" class="control-btn" title="Share">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          </button>
+          <button id="email-btn" class="control-btn" title="Email">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          </button>
+          <button id="pdf-btn" class="control-btn" title="Download PDF">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Single View Grid -->
+        <div class="single-view-grid">
+          <!-- Left: AQI & Location -->
+          <div class="aqi-summary">
+            <h2 id="city-name">City Name</h2>
+            <span id="date-time" class="timestamp">Today</span>
+            <div class="aqi-display">
+              <div class="aqi-number" id="aqi-value">--</div>
+              <div class="aqi-label">US AQI</div>
+            </div>
+            <div class="aqi-status-inline">
+              <i data-lucide="info" class="status-icon-small"></i>
+              <div>
+                <h4 id="aqi-status-text">Good</h4>
+                <p id="aqi-description">Air quality is satisfactory.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Center: Metrics Grid -->
+          <div class="metrics-compact">
+            <div class="metric-mini" id="pm25-card">
+              <i data-lucide="wind"></i>
+              <div>
+                <span class="mini-label">PM2.5</span>
+                <span class="mini-value"><span id="pm25-val">--</span></span>
+              </div>
+            </div>
+
+            <div class="metric-mini" id="pm10-card">
+              <i data-lucide="cloud"></i>
+              <div>
+                <span class="mini-label">PM10</span>
+                <span class="mini-value"><span id="pm10-val">--</span></span>
+              </div>
+            </div>
+
+            <div class="metric-mini" id="no2-card">
+              <i data-lucide="car"></i>
+              <div>
+                <span class="mini-label">NO₂</span>
+                <span class="mini-value"><span id="no2-val">--</span></span>
+              </div>
+            </div>
+
+            <div class="metric-mini" id="so2-card">
+              <i data-lucide="factory"></i>
+              <div>
+                <span class="mini-label">SO₂</span>
+                <span class="mini-value"><span id="so2-val">--</span></span>
+              </div>
+            </div>
+
+            <div class="metric-mini" id="o3-card">
+              <i data-lucide="sun"></i>
+              <div>
+                <span class="mini-label">O₃</span>
+                <span class="mini-value"><span id="o3-val">--</span></span>
+              </div>
+            </div>
+
+            <div class="metric-mini" id="co-card">
+              <i data-lucide="flame"></i>
+              <div>
+                <span class="mini-label">CO</span>
+                <span class="mini-value"><span id="co-val">--</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Health Tips -->
+          <div class="tips-compact">
+            <h4><i data-lucide="heart-pulse"></i> Recommendations</h4>
+            <ul id="health-tips">
+              <li>Loading...</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>Powered by Doaba Studios</p>
+      </footer>
+    </main>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Initialize Lucide icons
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+
+</html>

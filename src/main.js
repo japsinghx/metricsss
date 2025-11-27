@@ -70,8 +70,10 @@ async function initializeTicker() {
         city.aqi <= 100 ? 'moderate' :
           city.aqi <= 200 ? 'unhealthy' : 'hazardous';
 
+      const fullName = `${city.name}, ${city.country}`;
+
       return `
-        <div class="ticker-item aqi-${aqiClass}" data-city="${city.name}" data-lat="${city.lat}" data-lon="${city.lon}">
+        <div class="ticker-item aqi-${aqiClass}" data-city="${city.name}" data-full-name="${fullName}" data-lat="${city.lat}" data-lon="${city.lon}">
           <span class="ticker-city">${city.name}</span>
           <span class="ticker-aqi ${aqiClass}">AQI ${city.aqi}</span>
         </div>
@@ -81,16 +83,16 @@ async function initializeTicker() {
     // Add click handlers to ticker items
     document.querySelectorAll('.ticker-item').forEach(item => {
       item.addEventListener('click', async () => {
-        const cityName = item.dataset.city;
+        const fullName = item.dataset.fullName || item.dataset.city;
         const lat = parseFloat(item.dataset.lat);
         const lon = parseFloat(item.dataset.lon);
 
         // Update input field
-        locationInput.value = cityName;
+        locationInput.value = fullName;
 
         // Fetch and display data
         // The existing fetchAirQuality function already handles showLoading, updateUI, and showError
-        await fetchAirQuality(lat, lon, cityName);
+        await fetchAirQuality(lat, lon, fullName);
       });
 
       // Add hover effect
@@ -273,16 +275,17 @@ function showSuggestions(results) {
 
     const country = place.country ? `, ${place.country}` : '';
     const admin1 = place.admin1 ? `, ${place.admin1}` : '';
+    const fullName = `${place.name}${admin1}${country}`;
 
     div.innerHTML = `
       <span class="suggestion-primary">${place.name}</span>
-      <span class="suggestion-secondary">${place.name}${admin1}${country}</span>
+      <span class="suggestion-secondary">${fullName}</span>
     `;
 
     div.addEventListener('click', () => {
-      locationInput.value = place.name;
+      locationInput.value = fullName;
       suggestionsList.classList.add('hidden');
-      fetchAirQuality(place.latitude, place.longitude, `${place.name}${country}`);
+      fetchAirQuality(place.latitude, place.longitude, fullName);
     });
 
     suggestionsList.appendChild(div);

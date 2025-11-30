@@ -28,18 +28,33 @@ const healthTipsList = document.getElementById('health-tips');
 // Store current metric values for modal display
 let currentMetricValues = {};
 
-// Top 10 most populated cities with coordinates
+// Top cities around the world
 const topCities = [
+  { name: 'New York', country: 'USA', lat: 40.7128, lon: -74.0060 },
+  { name: 'Los Angeles', country: 'USA', lat: 34.0522, lon: -118.2437 },
+  { name: 'Chicago', country: 'USA', lat: 41.8781, lon: -87.6298 },
+  { name: 'London', country: 'UK', lat: 51.5074, lon: -0.1278 },
+  { name: 'Paris', country: 'France', lat: 48.8566, lon: 2.3522 },
   { name: 'Tokyo', country: 'Japan', lat: 35.6762, lon: 139.6503 },
-  { name: 'Delhi', country: 'India', lat: 28.6139, lon: 77.2090 },
-  { name: 'Shanghai', country: 'China', lat: 31.2304, lon: 121.4737 },
+  { name: 'Berlin', country: 'Germany', lat: 52.5200, lon: 13.4050 },
+  { name: 'Toronto', country: 'Canada', lat: 43.6532, lon: -79.3832 },
+  { name: 'Sydney', country: 'Australia', lat: -33.8688, lon: 151.2093 },
+  { name: 'Dubai', country: 'UAE', lat: 25.2048, lon: 55.2708 },
+  { name: 'Singapore', country: 'Singapore', lat: 1.3521, lon: 103.8198 },
   { name: 'São Paulo', country: 'Brazil', lat: -23.5505, lon: -46.6333 },
   { name: 'Mexico City', country: 'Mexico', lat: 19.4326, lon: -99.1332 },
-  { name: 'Cairo', country: 'Egypt', lat: 30.0444, lon: 31.2357 },
+  { name: 'Madrid', country: 'Spain', lat: 40.4168, lon: -3.7038 },
+  { name: 'Rome', country: 'Italy', lat: 41.9028, lon: 12.4964 },
+  { name: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lon: 4.9041 },
+  { name: 'Seoul', country: 'South Korea', lat: 37.5665, lon: 126.9780 },
   { name: 'Mumbai', country: 'India', lat: 19.0760, lon: 72.8777 },
-  { name: 'Beijing', country: 'China', lat: 39.9042, lon: 116.4074 },
-  { name: 'Dhaka', country: 'Bangladesh', lat: 23.8103, lon: 90.4125 },
-  { name: 'Osaka', country: 'Japan', lat: 34.6937, lon: 135.5022 }
+  { name: 'Shanghai', country: 'China', lat: 31.2304, lon: 121.4737 },
+  { name: 'Istanbul', country: 'Turkey', lat: 41.0082, lon: 28.9784 },
+  { name: 'Moscow', country: 'Russia', lat: 55.7558, lon: 37.6173 },
+  { name: 'Cairo', country: 'Egypt', lat: 30.0444, lon: 31.2357 },
+  { name: 'Buenos Aires', country: 'Argentina', lat: -34.6037, lon: -58.3816 },
+  { name: 'Lagos', country: 'Nigeria', lat: 6.5244, lon: 3.3792 },
+  { name: 'Bangkok', country: 'Thailand', lat: 13.7563, lon: 100.5018 }
 ];
 
 // Initialize ticker on page load
@@ -48,34 +63,37 @@ async function initializeTicker() {
   if (!tickerTrack) return;
 
   try {
-    const cityDataPromises = topCities.map(city =>
-      fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.lat}&longitude=${city.lon}&current=us_aqi`)
-        .then(res => res.json())
-        .then(data => ({
-          ...city,
-          aqi: data.current?.us_aqi || null
-        }))
-        .catch(() => ({ ...city, aqi: null }))
-    );
+    const lats = topCities.map(c => c.lat).join(',');
+    const lons = topCities.map(c => c.lon).join(',');
 
-    const citiesWithAQI = await Promise.all(cityDataPromises);
+    const response = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lats}&longitude=${lons}&current=us_aqi`);
+    const data = await response.json();
+
+    // Open-Meteo returns an array of objects when multiple coordinates are requested
+    const results = Array.isArray(data) ? data : [data];
+
+    const citiesWithAQI = topCities.map((city, index) => ({
+      ...city,
+      aqi: results[index]?.current?.us_aqi ?? null
+    }));
 
     // Create ticker items (duplicate for seamless loop)
     const items = [...citiesWithAQI, ...citiesWithAQI];
 
     tickerTrack.innerHTML = items.map(city => {
-      if (city.aqi === null) return '';
-
-      const aqiClass = city.aqi <= 50 ? 'good' :
-        city.aqi <= 100 ? 'moderate' :
-          city.aqi <= 200 ? 'unhealthy' : 'hazardous';
+      const hasData = city.aqi !== null;
+      const aqiClass = !hasData ? 'neutral' :
+        city.aqi <= 50 ? 'good' :
+          city.aqi <= 100 ? 'moderate' :
+            city.aqi <= 200 ? 'unhealthy' : 'hazardous';
 
       const fullName = `${city.name}, ${city.country}`;
+      const aqiText = hasData ? `AQI ${city.aqi}` : 'AQI --';
 
       return `
         <div class="ticker-item aqi-${aqiClass}" data-city="${city.name}" data-full-name="${fullName}" data-lat="${city.lat}" data-lon="${city.lon}">
           <span class="ticker-city">${city.name}</span>
-          <span class="ticker-aqi ${aqiClass}">AQI ${city.aqi}</span>
+          <span class="ticker-aqi ${aqiClass}">${aqiText}</span>
         </div>
       `;
     }).join('');
@@ -103,6 +121,10 @@ async function initializeTicker() {
     if (typeof lucide !== 'undefined') {
       lucide.createIcons();
     }
+
+    // Start the JS animation loop
+    startTickerAnimation();
+
   } catch (err) {
     console.error('Failed to load ticker:', err);
     tickerTrack.innerHTML = '<div class="ticker-loading">Unable to load global data</div>';
@@ -295,7 +317,7 @@ function showSuggestions(results) {
 
 function getCurrentLocation() {
   if (!navigator.geolocation) {
-    showError('Geolocation is not supported by your browser.');
+    showError('Geolocation not supported.');
     return;
   }
 
@@ -306,7 +328,7 @@ function getCurrentLocation() {
       await fetchAirQuality(latitude, longitude, "Your Location");
     },
     (err) => {
-      showError('Unable to retrieve your location.');
+      showError('Unable to get your location.');
       console.error(err);
     }
   );
@@ -320,7 +342,7 @@ async function fetchAirQuality(lat, lon, locationName) {
     const data = await response.json();
 
     if (!data.current) {
-      showError('Air quality data unavailable for this location.');
+      showError('No air quality data available.');
       return;
     }
 
@@ -329,7 +351,7 @@ async function fetchAirQuality(lat, lon, locationName) {
 
     updateUI(data.current, locationName);
   } catch (err) {
-    showError('Failed to fetch air quality data.');
+    showError('Unable to fetch air quality data.');
     console.error(err);
   }
 }
@@ -527,13 +549,11 @@ function getAQIStatus(aqi) {
 
 function showLoading() {
   const messages = [
-    'Sniffing the air...',
+    'Checking the air...',
+    'Reading conditions...',
+    'Getting data...',
     'Analyzing atmosphere...',
-    'Checking the breeze...',
-    'Reading the wind...',
-    'Measuring air vibes...',
-    'Consulting the clouds...',
-    'Asking the trees...'
+    'Measuring quality...'
   ];
   const randomMessage = messages[Math.floor(Math.random() * messages.length)];
 
@@ -701,55 +721,76 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Ticker Controls
-let tickerSpeed = 25; // seconds
-let tickerPaused = false;
+// Ticker Animation State
+let tickerPos = 0;
+let tickerBaseSpeed = 0.015; // Adjusted for longer list length
+let tickerCurrentSpeed = tickerBaseSpeed;
+let isTickerPaused = false;
+let tickerAnimFrame;
 
-const tickerTrackEl = document.getElementById('ticker-track');
-const playPauseBtn = document.getElementById('ticker-play-pause');
-const speedSlowBtn = document.getElementById('ticker-speed-slow');
-const speedFastBtn = document.getElementById('ticker-speed-fast');
+function startTickerAnimation() {
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
 
-function updateTickerAnimation() {
-  if (tickerTrackEl) {
-    if (tickerPaused) {
-      tickerTrackEl.style.animationPlayState = 'paused';
-    } else {
-      tickerTrackEl.style.animationPlayState = 'running';
-      tickerTrackEl.style.animationDuration = `${tickerSpeed}s`;
+  function animate() {
+    if (!isTickerPaused) {
+      tickerPos += tickerCurrentSpeed;
+
+      // Reset when we've scrolled half the width (since content is duplicated)
+      if (tickerPos >= 50) {
+        tickerPos = 0;
+      }
+
+      track.style.transform = `translateX(-${tickerPos}%)`;
     }
+    tickerAnimFrame = requestAnimationFrame(animate);
   }
+
+  // Cancel any existing loop
+  if (tickerAnimFrame) cancelAnimationFrame(tickerAnimFrame);
+  animate();
 }
+
+const playPauseBtn = document.getElementById('ticker-play-pause');
+const fastForwardBtn = document.getElementById('ticker-fast-forward');
 
 if (playPauseBtn) {
   playPauseBtn.addEventListener('click', () => {
-    tickerPaused = !tickerPaused;
+    isTickerPaused = !isTickerPaused;
 
     const playIcon = playPauseBtn.querySelector('.play-icon');
     const pauseIcon = playPauseBtn.querySelector('.pause-icon');
 
-    if (tickerPaused) {
+    if (isTickerPaused) {
       playIcon.classList.remove('hidden');
       pauseIcon.classList.add('hidden');
     } else {
       playIcon.classList.add('hidden');
       pauseIcon.classList.remove('hidden');
     }
-
-    updateTickerAnimation();
   });
 }
 
-if (speedSlowBtn) {
-  speedSlowBtn.addEventListener('click', () => {
-    tickerSpeed = Math.min(tickerSpeed + 5, 40); // Max 40s
-    updateTickerAnimation();
-  });
-}
+if (fastForwardBtn) {
+  fastForwardBtn.addEventListener('click', () => {
+    // If paused, unpause temporarily or permanently? 
+    // Let's force play during the fast forward, then revert to previous state?
+    // User said "scrolls through", implying movement.
 
-if (speedFastBtn) {
-  speedFastBtn.addEventListener('click', () => {
-    tickerSpeed = Math.max(tickerSpeed - 5, 10); // Min 10s
-    updateTickerAnimation();
+    const wasPaused = isTickerPaused;
+    isTickerPaused = false;
+
+    // Smoothly boost speed
+    tickerCurrentSpeed = 0.5; // Fast speed
+
+    // Animate the button to show feedback
+    fastForwardBtn.style.transform = 'scale(0.9)';
+    setTimeout(() => fastForwardBtn.style.transform = '', 100);
+
+    // Revert after a short duration
+    setTimeout(() => {
+      tickerCurrentSpeed = tickerBaseSpeed;
+      if (wasPaused) isTickerPaused = true;
+    }, 800);
   });
 }

@@ -85,6 +85,13 @@
                 </svg>
               </div>
               <input type="text" id="location-input" placeholder="Search for a city" autocomplete="off" />
+              <button id="clear-btn" class="hidden" title="Clear search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
               <button id="locate-btn" title="Use my location">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -103,23 +110,16 @@
       <div class="ticker-container">
         <div class="ticker-header">
           <h3 class="ticker-title">
-            <i data-lucide="globe"></i>
             Air Quality Worldwide
           </h3>
           <div class="ticker-controls">
             <button id="ticker-play-pause" class="ticker-control-btn" title="Pause/Play">
-              <svg class="play-icon hidden" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="play-icon hidden" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
-              <svg class="pause-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="pause-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="6" y="4" width="4" height="16" />
                 <rect x="14" y="4" width="4" height="16" />
-              </svg>
-            </button>
-            <button id="ticker-fast-forward" class="ticker-control-btn" title="Fast Forward">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="13 19 22 12 13 5 13 19"></polygon>
-                <polygon points="2 19 11 12 2 5 2 19"></polygon>
               </svg>
             </button>
           </div>
@@ -201,13 +201,8 @@
                   <span class="metric-name">PM2.5</span>
                   <span class="metric-val"><span id="pm25-val">--</span> µg/m³</span>
                 </div>
-                <button class="metric-info-btn" data-metric="pm25" title="More info">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                    <circle cx="12" cy="17" r="0.5" fill="currentColor" />
-                  </svg>
+                <button class="metric-info-btn" data-metric="pm25">
+                  <span class="link-text">Learn more</span> <span class="arrow">›</span>
                 </button>
 
               </div>
@@ -220,13 +215,8 @@
                   <span class="metric-name">PM10</span>
                   <span class="metric-val"><span id="pm10-val">--</span> µg/m³</span>
                 </div>
-                <button class="metric-info-btn" data-metric="pm10" title="More info">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                    <circle cx="12" cy="17" r="0.5" fill="currentColor" />
-                  </svg>
+                <button class="metric-info-btn" data-metric="pm10">
+                  <span class="link-text">Learn more</span> <span class="arrow">›</span>
                 </button>
 
               </div>
@@ -243,13 +233,8 @@
                   <span class="metric-name">NO₂</span>
                   <span class="metric-val"><span id="no2-val">--</span> µg/m³</span>
                 </div>
-                <button class="metric-info-btn" data-metric="no2" title="More info">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                    <circle cx="12" cy="17" r="0.5" fill="currentColor" />
-                  </svg>
+                <button class="metric-info-btn" data-metric="no2">
+                  <span class="link-text">Learn more</span> <span class="arrow">›</span>
                 </button>
 
               </div>
@@ -269,13 +254,8 @@
                   <span class="metric-name">SO₂</span>
                   <span class="metric-val"><span id="so2-val">--</span> µg/m³</span>
                 </div>
-                <button class="metric-info-btn" data-metric="so2" title="More info">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                    <circle cx="12" cy="17" r="0.5" fill="currentColor" />
-                  </svg>
+                <button class="metric-info-btn" data-metric="so2">
+                  <span class="link-text">Learn more</span> <span class="arrow">›</span>
                 </button>
 
               </div>
@@ -296,13 +276,8 @@
                   <span class="metric-name">Ozone</span>
                   <span class="metric-val"><span id="o3-val">--</span> µg/m³</span>
                 </div>
-                <button class="metric-info-btn" data-metric="o3" title="More info">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                    <circle cx="12" cy="17" r="0.5" fill="currentColor" />
-                  </svg>
+                <button class="metric-info-btn" data-metric="o3">
+                  <span class="link-text">Learn more</span> <span class="arrow">›</span>
                 </button>
 
               </div>
@@ -316,13 +291,8 @@
                   <span class="metric-name">CO</span>
                   <span class="metric-val"><span id="co-val">--</span> µg/m³</span>
                 </div>
-                <button class="metric-info-btn" data-metric="co" title="More info">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                    <circle cx="12" cy="17" r="0.5" fill="currentColor" />
-                  </svg>
+                <button class="metric-info-btn" data-metric="co">
+                  <span class="link-text">Learn more</span> <span class="arrow">›</span>
                 </button>
 
               </div>
@@ -343,15 +313,56 @@
             </ul>
           </div>
         </div>
+        <div class="dashboard-content-secondary">
+          <!-- Pollen / Allergy Tracker -->
+          <div class="section-card large-card">
+            <h4 class="section-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L14.5 9H22L16 13.5L18.5 21L12 16.5L5.5 21L8 13.5L2 9H9.5L12 2Z" />
+              </svg>
+              Allergy Tracker (Pollen)
+            </h4>
+            <div class="pollen-grid" id="pollen-grid">
+              <div class="pollen-loading">Loading pollen data...</div>
+            </div>
+          </div>
+
+          <!-- Climate Change Monitor -->
+          <div class="section-card large-card">
+            <div class="climate-card-header">
+              <div class="climate-title-group">
+                <h4 class="section-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                    <path d="M12 2a10 10 0 0 1 10 10"></path>
+                    <circle cx="12" cy="12" r="1"></circle>
+                  </svg>
+                  Local Climate Trend
+                </h4>
+                <p class="section-subtitle">Temperature on this day across decades</p>
+              </div>
+              <div class="unit-toggle-group">
+                <label class="toggle-switch unit-toggle">
+                  <input type="checkbox" id="unit-toggle-input" checked>
+                  <span class="toggle-slider unit-slider">
+                    <span class="unit-icon celsius-icon">°C</span>
+                    <span class="unit-icon fahrenheit-icon">°F</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div class="climate-chart" id="climate-chart">
+              <div class="climate-loading">Loading historical data...</div>
+            </div>
+          </div>
+        </div>
       </div>
 
 
       <footer class="app-footer">
         <div class="footer-links">
           <a href="about.html">About Us</a>
-          <span class="footer-divider">•</span>
           <a href="contact.html">Contact Us</a>
-          <span class="footer-divider">•</span>
           <div class="powered-by-dropdown">
             <span class="powered-by-trigger">Powered by ▾</span>
             <div class="powered-by-menu">

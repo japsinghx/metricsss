@@ -33,7 +33,24 @@
                     <a href="contact.html">Contact</a>
                     <label class="toggle-switch nav-toggle">
                         <input type="checkbox" id="dark-mode-toggle">
-                        <span class="toggle-slider"></span>
+                        <span class="toggle-slider">
+                            <svg class="toggle-icon sun-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5" />
+                                <line x1="12" y1="1" x2="12" y2="3" />
+                                <line x1="12" y1="21" x2="12" y2="23" />
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                                <line x1="1" y1="12" x2="3" y2="12" />
+                                <line x1="21" y1="12" x2="23" y2="12" />
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                            </svg>
+                            <svg class="toggle-icon moon-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                            </svg>
+                        </span>
                     </label>
                 </div>
             </div>
@@ -76,9 +93,7 @@
             <footer class="app-footer">
                 <div class="footer-links">
                     <a href="index.html">Home</a>
-                    <span class="footer-divider">•</span>
                     <a href="about.html">About Us</a>
-                    <span class="footer-divider">•</span>
                     <a href="contact.html">Contact Us</a>
                 </div>
                 <p class="footer-copyright">&copy; 2024 Breeze. All rights reserved.</p>
@@ -87,11 +102,26 @@
     </div>
 
     <script>
-        // Check for saved dark mode preference
-        if (localStorage.getItem('darkMode') === null || localStorage.getItem('darkMode') === 'enabled') {
+        // Check for saved dark mode preference and set initial state
+        const savedMode = localStorage.getItem('darkMode');
+        const isDarkByDefault = savedMode === null || savedMode === 'enabled';
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+        if (isDarkByDefault) {
             document.body.classList.add('dark-mode');
+            if (darkModeToggle) darkModeToggle.checked = true;
         } else {
             document.body.classList.remove('dark-mode');
+            if (darkModeToggle) darkModeToggle.checked = false;
+        }
+
+        // Add event listener for toggle
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('change', () => {
+                document.body.classList.toggle('dark-mode');
+                const isDark = document.body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            });
         }
     </script>
 </body>

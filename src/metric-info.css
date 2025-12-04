@@ -4,32 +4,44 @@
 }
 
 .metric-info-btn {
-    padding: 0.375rem;
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: 50%;
-    color: var(--text-muted);
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--primary);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    display: flex;
+    transition: none !important;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
+    gap: 0.125rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
     margin-left: auto;
+    white-space: nowrap;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .metric-info-btn:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-    transform: scale(1.15) rotate(90deg);
+    background: transparent !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
-.metric-info-btn svg {
-    width: 14px;
-    height: 14px;
+.metric-info-btn:hover .link-text {
+    text-decoration: underline;
+}
+
+.metric-info-btn:active {
+    background: transparent !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.metric-info-btn .arrow {
+    display: inline-block;
+    font-size: 1rem;
+    margin-left: 0.25rem;
 }
 
 /* Modal Backdrop */

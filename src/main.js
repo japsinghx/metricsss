@@ -25,6 +25,13 @@ const coVal = document.getElementById('co-val');
 
 const healthTipsList = document.getElementById('health-tips');
 
+// Environmental Insights Elements
+const pollenGrid = document.getElementById('pollen-grid');
+const climateChart = document.getElementById('climate-chart');
+
+// Unit toggle
+let useFahrenheit = true;
+
 // Store current metric values for modal display
 let currentMetricValues = {};
 
@@ -137,10 +144,20 @@ initializeTicker();
 let debounceTimer;
 let selectedSuggestionIndex = -1;
 
+const clearBtn = document.getElementById('clear-btn');
+
 // Event Listeners
 locationInput.addEventListener('input', (e) => {
   clearTimeout(debounceTimer);
   const query = e.target.value.trim();
+
+  // Toggle clear button visibility
+  if (e.target.value.length > 0) {
+    clearBtn.classList.remove('hidden');
+  } else {
+    clearBtn.classList.add('hidden');
+  }
+
   selectedSuggestionIndex = -1; // Reset selection on new input
 
   if (query.length < 2) {
@@ -152,6 +169,16 @@ locationInput.addEventListener('input', (e) => {
     fetchSuggestions(query);
   }, 300);
 });
+
+// Clear button handler
+if (clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    locationInput.value = '';
+    clearBtn.classList.add('hidden');
+    suggestionsList.classList.add('hidden');
+    locationInput.focus();
+  });
+}
 
 // Keyboard navigation for suggestions
 locationInput.addEventListener('keydown', (e) => {
@@ -200,6 +227,26 @@ document.addEventListener('click', (e) => {
 });
 
 locateBtn.addEventListener('click', getCurrentLocation);
+
+// Unit Toggle Switch
+const unitToggleInput = document.getElementById('unit-toggle-input');
+if (unitToggleInput) {
+  unitToggleInput.addEventListener('change', () => {
+    useFahrenheit = unitToggleInput.checked;
+
+    // Re-render climate chart if data exists
+    if (climateChart && !climateChart.querySelector('.climate-loading')) {
+      // Trigger a re-fetch to update the display
+      const params = new URLSearchParams(window.location.search);
+      const lat = params.get('lat');
+      const lon = params.get('lon');
+      const city = params.get('city');
+      if (lat && lon && city) {
+        fetchClimateData(parseFloat(lat), parseFloat(lon), city);
+      }
+    }
+  });
+}
 
 // Dark Mode Toggle
 const darkModeToggle = document.getElementById('dark-mode-toggle');
@@ -350,6 +397,10 @@ async function fetchAirQuality(lat, lon, locationName) {
     updateURL(locationName, lat, lon);
 
     updateUI(data.current, locationName);
+
+    // Fetch additional environmental data
+    fetchPollen(lat, lon);
+    fetchClimateData(lat, lon, locationName);
   } catch (err) {
     showError('Unable to fetch air quality data.');
     console.error(err);
@@ -732,6 +783,17 @@ function startTickerAnimation() {
   const track = document.getElementById('ticker-track');
   if (!track) return;
 
+  // Slow down on hover
+  const container = track.parentElement;
+  if (container) {
+    container.addEventListener('mouseenter', () => {
+      tickerCurrentSpeed = tickerBaseSpeed * 0.4; // Slow down to 40% speed
+    });
+    container.addEventListener('mouseleave', () => {
+      tickerCurrentSpeed = tickerBaseSpeed;
+    });
+  }
+
   function animate() {
     if (!isTickerPaused) {
       tickerPos += tickerCurrentSpeed;
@@ -793,4 +855,338 @@ if (fastForwardBtn) {
       if (wasPaused) isTickerPaused = true;
     }, 800);
   });
+}
+
+// --- Environmental Insights Functions ---
+
+async function fetchPollen(lat, lon) {
+  // Try Google Pollen API first (if API key is configured)
+  const googleApiKey = import.meta.env.VITE_GOOGLE_POLLEN_API_KEY;
+
+  console.log('Pollen API Key check:', {
+    exists: !!googleApiKey,
+    length: googleApiKey?.length,
+    firstChars: googleApiKey?.substring(0, 10),
+    isPlaceholder: googleApiKey === 'your_api_key_here'
+  });
+
+  if (googleApiKey && googleApiKey !== 'your_api_key_here') {
+    try {
+      console.log('Attempting Google Pollen API with coords:', { lat, lon });
+      const googleData = await fetchGooglePollen(lat, lon, googleApiKey);
+      console.log('Google Pollen API returned:', googleData);
+      if (googleData) {
+        updatePollenUI(googleData, 'google');
+        return;
+      }
+    } catch (err) {
+      console.warn('Google Pollen API failed, falling back to Open-Meteo:', err);
+    }
+  } else {
+    console.log('No valid Google API key, using Open-Meteo fallback');
+  }
+
+  // Fallback to Open-Meteo (Europe only)
+  try {
+    const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=auto&forecast_days=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.hourly) {
+      updatePollenUI(data.hourly, 'openmeteo');
+    }
+  } catch (err) {
+    console.error('Error fetching pollen data:', err);
+    if (pollenGrid) pollenGrid.innerHTML = '<p class="error-text">Unable to load pollen data</p>';
+  }
+}
+
+async function fetchGooglePollen(lat, lon, apiKey) {
+  // Use GET method with URL parameters (like the working curl command)
+  const url = `https://pollen.googleapis.com/v1/forecast:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lon}&days=1&languageCode=en`;
+
+  const response = await fetch(url, {
+    method: 'GET'
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Google Pollen API error:', response.status, errorText);
+    throw new Error(`Google Pollen API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log('Google Pollen API response:', data); // Debug log
+
+  // Transform Google's format to our format
+  if (data.dailyInfo && data.dailyInfo.length > 0) {
+    const today = data.dailyInfo[0];
+    const pollenTypes = today.pollenTypeInfo || [];
+    const plantInfo = today.plantInfo || [];
+
+    // Map Google pollen types to our display format
+    return {
+      tree: pollenTypes.find(p => p.code === 'TREE'),
+      grass: pollenTypes.find(p => p.code === 'GRASS'),
+      weed: pollenTypes.find(p => p.code === 'WEED'),
+      plants: plantInfo
+    };
+  }
+
+  return null;
+}
+
+function updatePollenUI(data, source) {
+  if (!pollenGrid) return;
+
+  if (source === 'google') {
+    // Google Pollen API format - compact like pollutants
+    const allItems = [];
+
+    // Collect main pollen types with indexInfo
+    if (data.tree && data.tree.indexInfo) {
+      allItems.push({
+        name: 'Tree',
+        value: data.tree.indexInfo.value,
+        category: data.tree.indexInfo.category,
+        color: getGooglePollenColor(data.tree.indexInfo.category)
+      });
+    }
+
+    if (data.grass && data.grass.indexInfo) {
+      allItems.push({
+        name: 'Grass',
+        value: data.grass.indexInfo.value,
+        category: data.grass.indexInfo.category,
+        color: getGooglePollenColor(data.grass.indexInfo.category)
+      });
+    }
+
+    if (data.weed && data.weed.indexInfo) {
+      allItems.push({
+        name: 'Weed',
+        value: data.weed.indexInfo.value,
+        category: data.weed.indexInfo.category,
+        color: getGooglePollenColor(data.weed.indexInfo.category)
+      });
+    }
+
+    // Add specific plants with indexInfo
+    if (data.plants && Array.isArray(data.plants)) {
+      data.plants.forEach(plant => {
+        if (plant.indexInfo) {
+          allItems.push({
+            name: plant.displayName,
+            value: plant.indexInfo.value,
+            category: plant.indexInfo.category,
+            color: getGooglePollenColor(plant.indexInfo.category),
+            isPlant: true
+          });
+        }
+      });
+    }
+
+    if (allItems.length === 0) {
+      pollenGrid.innerHTML = `
+        <div class="pollen-no-data">
+          <span>No active pollen detected</span>
+        </div>
+      `;
+      return;
+    }
+
+    // Compact grid layout like pollutants
+    pollenGrid.innerHTML = allItems.map(item => `
+      <div class="pollen-compact-item">
+        <div class="pollen-compact-header">
+          <span class="pollen-compact-name">${item.name}</span>
+          <span class="pollen-compact-value ${item.color}">${item.value}</span>
+        </div>
+        <div class="pollen-compact-bar">
+          <div class="pollen-compact-fill ${item.color}" style="width: ${(item.value / 5) * 100}%"></div>
+        </div>
+        <span class="pollen-compact-label">${item.category}</span>
+      </div>
+    `).join('');
+  } else {
+    // Open-Meteo format (existing logic)
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    // Check if data is available
+    if (data.alder_pollen[currentHour] === null) {
+      pollenGrid.innerHTML = `
+        <div class="pollen-unavailable">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 0.5rem; opacity: 0.5;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+          </svg>
+          <p>Pollen data unavailable for this location.</p>
+          <small>Try adding a Google Pollen API key for global coverage</small>
+        </div>
+      `;
+      return;
+    }
+
+    const pollenTypes = [
+      { key: 'alder_pollen', name: 'Alder' },
+      { key: 'birch_pollen', name: 'Birch' },
+      { key: 'grass_pollen', name: 'Grass' },
+      { key: 'mugwort_pollen', name: 'Mugwort' },
+      { key: 'olive_pollen', name: 'Olive' },
+      { key: 'ragweed_pollen', name: 'Ragweed' }
+    ];
+
+    pollenGrid.innerHTML = pollenTypes.map(type => {
+      const value = data[type.key][currentHour];
+      const level = getPollenLevel(value);
+
+      return `
+        <div class="pollen-item">
+          <div class="pollen-header">
+            <span class="pollen-name">${type.name}</span>
+            <span class="pollen-value">${value} <span class="unit">gr/m³</span></span>
+          </div>
+          <div class="pollen-bar-bg">
+            <div class="pollen-bar-fill ${level.class}" style="width: ${Math.min((value / 100) * 100, 100)}%"></div>
+          </div>
+          <span class="pollen-label ${level.class}">${level.label}</span>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function getGooglePollenColor(category) {
+  if (!category) return 'level-none';
+
+  const cat = category.toLowerCase().replace(/\s+/g, '_');
+
+  switch (cat) {
+    case 'none':
+    case 'no_data':
+      return 'level-none';
+    case 'very_low':
+    case 'verylow':
+      return 'level-low';
+    case 'low':
+      return 'level-low';
+    case 'moderate':
+      return 'level-moderate';
+    case 'high':
+      return 'level-high';
+    case 'very_high':
+    case 'veryhigh':
+      return 'level-extreme';
+    default:
+      return 'level-none';
+  }
+}
+
+function getPollenLevel(value) {
+  if (value < 10) return { label: 'Low', class: 'level-low' };
+  if (value < 30) return { label: 'Moderate', class: 'level-moderate' };
+  if (value < 100) return { label: 'High', class: 'level-high' };
+  return { label: 'Very High', class: 'level-extreme' };
+}
+
+// Temperature conversion helpers
+function celsiusToFahrenheit(celsius) {
+  return (celsius * 9 / 5) + 32;
+}
+
+// Convert temperature DIFFERENCE (not absolute temperature)
+function celsiusDifferenceToFahrenheit(celsiusDiff) {
+  return celsiusDiff * 9 / 5;
+}
+
+function formatTemp(celsius) {
+  if (useFahrenheit) {
+    return celsiusToFahrenheit(celsius).toFixed(1) + '°F';
+  }
+  return celsius.toFixed(1) + '°C';
+}
+
+async function fetchClimateData(lat, lon, locationName) {
+  try {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    // Fetch temperature data for this day across multiple decades
+    const years = [1980, 1990, 2000, 2010, 2020, today.getFullYear()];
+
+    const requests = years.map(year => {
+      const date = `${year}-${month}-${day}`;
+      return fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${date}&end_date=${date}&daily=temperature_2m_max&timezone=auto`)
+        .then(res => res.json())
+        .catch(() => null);
+    });
+
+    const responses = await Promise.all(requests);
+
+    const climateData = responses.map((data, index) => ({
+      year: years[index],
+      temp: data?.daily?.temperature_2m_max?.[0] ?? null
+    })).filter(d => d.temp !== null);
+
+    if (climateData.length > 0) {
+      updateClimateUI(climateData, locationName);
+    } else {
+      if (climateChart) climateChart.innerHTML = '<p class="error-text">Climate data unavailable for this location</p>';
+    }
+
+  } catch (err) {
+    console.error('Error fetching climate data:', err);
+    if (climateChart) climateChart.innerHTML = '<p class="error-text">Unable to load climate data</p>';
+  }
+}
+
+function updateClimateUI(data) {
+  if (!climateChart) return;
+
+  const temps = data.map(d => d.temp);
+  const minTemp = Math.min(...temps);
+  const maxTemp = Math.max(...temps);
+  const range = maxTemp - minTemp || 1;
+
+  // Calculate average warming from baseline (1980)
+  const baseline = data[0].temp;
+  const latest = data[data.length - 1].temp;
+  const warming = latest - baseline;
+
+  const warmingClass = warming > 0 ? 'warming' : warming < 0 ? 'cooling' : 'stable';
+  const warmingDisplay = useFahrenheit ? celsiusDifferenceToFahrenheit(warming).toFixed(1) : warming.toFixed(1);
+  const unit = useFahrenheit ? '°F' : '°C';
+
+  climateChart.innerHTML = `
+    <div class="climate-summary ${warmingClass}">
+      <div class="climate-stat">
+        <span class="stat-label">Change since 1980</span>
+        <span class="stat-value">${warming > 0 ? '+' : ''}${warmingDisplay}${unit}</span>
+      </div>
+    </div>
+    <div class="climate-bars">
+      ${data.map(item => {
+    const heightPercent = ((item.temp - minTemp) / range) * 60 + 30;
+    const diff = item.temp - baseline;
+
+    let colorClass = 'climate-neutral';
+    if (diff > 2) colorClass = 'climate-hot';
+    else if (diff > 0.5) colorClass = 'climate-warm';
+    else if (diff < -0.5) colorClass = 'climate-cool';
+
+    const displayTemp = formatTemp(item.temp);
+
+    return `
+          <div class="climate-bar-wrapper">
+            <div class="climate-bar ${colorClass}" style="height: ${heightPercent}%">
+              <span class="climate-temp">${displayTemp}</span>
+            </div>
+            <span class="climate-year">${item.year}</span>
+          </div>
+        `;
+  }).join('')}
+    </div>
+  `;
 }

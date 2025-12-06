@@ -700,6 +700,16 @@ function openMetricModal(metricId) {
   const info = metricInfo[metricId];
   if (!info) return;
 
+  // Reset visibility of headers for standard metrics
+  const sectionTitles = metricModal.querySelectorAll('.metric-modal-section-title');
+  sectionTitles.forEach(el => el.style.display = 'block');
+
+  const statusLabel = metricModal.querySelector('.current-status-label');
+  if (statusLabel) statusLabel.style.display = 'block';
+
+  const rangesTitle = sectionTitles[1]; // Usually the second one
+  if (rangesTitle) rangesTitle.textContent = 'Health Ranges';
+
   // Set modal content
   metricModalTitle.textContent = info.title;
   metricModalSubtitle.textContent = info.description;
@@ -758,6 +768,14 @@ document.addEventListener('click', (e) => {
     e.stopPropagation();
     const metric = infoBtn.dataset.metric;
     openMetricModal(metric);
+  }
+
+  // Handle pollen info buttons
+  const pollenBtn = e.target.closest('.pollen-info-btn');
+  if (pollenBtn) {
+    e.stopPropagation();
+    const code = pollenBtn.dataset.code;
+    openPollenModal(code);
   }
 });
 
@@ -921,20 +939,16 @@ async function fetchGooglePollen(lat, lon, apiKey) {
   // Transform Google's format to our format
   if (data.dailyInfo && data.dailyInfo.length > 0) {
     const today = data.dailyInfo[0];
-    const pollenTypes = today.pollenTypeInfo || [];
-    const plantInfo = today.plantInfo || [];
-
-    // Map Google pollen types to our display format
     return {
-      tree: pollenTypes.find(p => p.code === 'TREE'),
-      grass: pollenTypes.find(p => p.code === 'GRASS'),
-      weed: pollenTypes.find(p => p.code === 'WEED'),
-      plants: plantInfo
+      pollenTypes: today.pollenTypeInfo || [],
+      plants: today.plantInfo || []
     };
   }
 
   return null;
 }
+
+let currentPollenDetails = {};
 
 function updatePollenUI(data, source) {
   if (!pollenGrid) return;
@@ -942,64 +956,74 @@ function updatePollenUI(data, source) {
   if (source === 'google') {
     // Google Pollen API format - compact like pollutants
     const allItems = [];
+    currentPollenDetails = {}; // Reset storage
 
-    // Collect main pollen types with indexInfo
-    if (data.tree && data.tree.indexInfo) {
-      allItems.push({
-        name: 'Tree',
-        value: data.tree.indexInfo.value,
-        category: data.tree.indexInfo.category,
-        color: getGooglePollenColor(data.tree.indexInfo.category)
+    // Process Pollen Types (Grass, Tree, Weed)
+    if (data.pollenTypes) {
+      data.pollenTypes.forEach(type => {
+        const indexInfo = type.indexInfo || {
+          value: 0,
+          category: 'Low',
+          color: { red: 0, green: 1, blue: 0 } // Default green-ish
+        };
+
+        // Store details for modal
+        currentPollenDetails[type.code] = { ...type, isPlant: false };
+
+        allItems.push({
+          code: type.code,
+          name: type.displayName,
+          value: indexInfo.value,
+          category: indexInfo.category,
+          color: getGooglePollenColor(indexInfo.category),
+          hasDetails: !!(type.healthRecommendations || type.indexInfo?.indexDescription)
+        });
       });
     }
 
-    if (data.grass && data.grass.indexInfo) {
-      allItems.push({
-        name: 'Grass',
-        value: data.grass.indexInfo.value,
-        category: data.grass.indexInfo.category,
-        color: getGooglePollenColor(data.grass.indexInfo.category)
-      });
-    }
-
-    if (data.weed && data.weed.indexInfo) {
-      allItems.push({
-        name: 'Weed',
-        value: data.weed.indexInfo.value,
-        category: data.weed.indexInfo.category,
-        color: getGooglePollenColor(data.weed.indexInfo.category)
-      });
-    }
-
-    // Add specific plants with indexInfo
-    if (data.plants && Array.isArray(data.plants)) {
+    // Process Plants
+    if (data.plants) {
       data.plants.forEach(plant => {
-        if (plant.indexInfo) {
-          allItems.push({
-            name: plant.displayName,
-            value: plant.indexInfo.value,
-            category: plant.indexInfo.category,
-            color: getGooglePollenColor(plant.indexInfo.category),
-            isPlant: true
-          });
-        }
+        const indexInfo = plant.indexInfo || {
+          value: 0,
+          category: 'Low',
+          color: { red: 0, green: 1, blue: 0 }
+        };
+
+        // Store details for modal
+        currentPollenDetails[plant.code] = { ...plant, isPlant: true };
+
+        allItems.push({
+          code: plant.code,
+          name: plant.displayName,
+          value: indexInfo.value,
+          category: indexInfo.category,
+          color: getGooglePollenColor(indexInfo.category),
+          isPlant: true,
+          hasDetails: !!(plant.healthRecommendations || plant.plantDescription || plant.indexInfo?.indexDescription)
+        });
       });
     }
 
     if (allItems.length === 0) {
       pollenGrid.innerHTML = `
         <div class="pollen-no-data">
-          <span>No active pollen detected</span>
+          <span>No pollen data available</span>
         </div>
       `;
       return;
     }
 
-    // Compact grid layout like pollutants
+    // Render Compact Items
     pollenGrid.innerHTML = allItems.map(item => `
       <div class="pollen-compact-item">
         <div class="pollen-compact-header">
           <span class="pollen-compact-name">${item.name}</span>
+           ${item.hasDetails ? `
+            <button class="pollen-info-btn" data-code="${item.code}" aria-label="More info about ${item.name}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </button>
+          ` : ''}
           <span class="pollen-compact-value ${item.color}">${item.value}</span>
         </div>
         <div class="pollen-compact-bar">
@@ -1056,8 +1080,99 @@ function updatePollenUI(data, source) {
   }
 }
 
+function openPollenModal(code) {
+  const info = currentPollenDetails[code];
+  if (!info) return;
+
+  const indexInfo = info.indexInfo || {
+    value: 0,
+    category: 'Low',
+    indexDescription: 'No active pollen detected.'
+  };
+
+  // Set modal content
+  metricModalTitle.textContent = info.displayName;
+  metricModalSubtitle.textContent = indexInfo.indexDescription;
+
+  // Hide "Your Current Level" and "Health Ranges" headers for Pollen
+  const sectionTitles = metricModal.querySelectorAll('.metric-modal-section-title');
+  sectionTitles.forEach(el => el.style.display = 'none');
+
+  // Hide "Current Value" text label
+  const statusLabel = metricModal.querySelector('.current-status-label');
+  if (statusLabel) statusLabel.style.display = 'none';
+
+  // Current Level & Side-by-Side Legend
+  const colorClass = getGooglePollenColor(indexInfo.category);
+  metricModalCurrent.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 1rem;">
+      <div style="display: flex; flex-direction: column;">
+        <span class="pollen-modal-value ${colorClass}" style="line-height: 1; margin-bottom: 0.25rem;">${indexInfo.value}</span>
+        <span class="pollen-modal-category" style="margin: 0;">${indexInfo.category}</span>
+      </div>
+      
+      <div class="pollen-legend-side">
+        <div class="pollen-legend-grid" style="grid-template-columns: repeat(2, 1fr); gap: 0.25rem 0.75rem;">
+           <div class="legend-item"><span class="legend-dot level-low"></span>Low (0-1)</div>
+           <div class="legend-item"><span class="legend-dot level-moderate"></span>Mod (2-3)</div>
+           <div class="legend-item"><span class="legend-dot level-high"></span>High (4)</div>
+           <div class="legend-item"><span class="legend-dot level-extreme"></span>Very High (5)</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Build content for the "ranges" area (repurposed for details)
+  let detailsHtml = '';
+
+  // 1. Image (Top Priority)
+  if (info.plantDescription && info.plantDescription.picture) {
+    detailsHtml += `
+        <div class="pollen-section no-border">
+            <img src="${info.plantDescription.picture}" alt="${info.displayName}" class="pollen-detail-image">
+        </div>
+      `;
+  }
+
+  // 2. About this Plant
+  if (info.plantDescription) {
+    const pd = info.plantDescription;
+    detailsHtml += `
+      <div class="pollen-section">
+        <h4 class="pollen-section-title">About this Plant</h4>
+        <div class="plant-details">
+          ${pd.family ? `<p><strong>Family:</strong> ${pd.family}</p>` : ''}
+          ${pd.season ? `<p><strong>Season:</strong> ${pd.season}</p>` : ''}
+          ${pd.specialColors ? `<p><strong>Appearance:</strong> ${pd.specialColors}</p>` : ''}
+          ${pd.crossReaction ? `<p><strong>Cross Reaction:</strong> ${pd.crossReaction}</p>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. Health Recommendations
+  if (info.healthRecommendations && info.healthRecommendations.length > 0) {
+    detailsHtml += `
+      <div class="pollen-section">
+        <h4 class="pollen-section-title">Health Recommendations</h4>
+        <ul class="pollen-tips-list">
+          ${info.healthRecommendations.map(rec => `<li>${rec}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  metricModalRanges.style.display = 'block';
+  metricModalRanges.innerHTML = detailsHtml;
+
+  // Show modal
+  metricModal.classList.add('active');
+  metricModalBackdrop.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
 function getGooglePollenColor(category) {
-  if (!category) return 'level-none';
+  if (!category) return 'level-low'; // Default to low/green
 
   const cat = category.toLowerCase().replace(/\s+/g, '_');
 
@@ -1078,7 +1193,7 @@ function getGooglePollenColor(category) {
     case 'veryhigh':
       return 'level-extreme';
     default:
-      return 'level-none';
+      return 'level-low'; // Default safe
   }
 }
 

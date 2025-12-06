@@ -133,10 +133,54 @@
     </section>
 
     <main>
-      <div id="loading" class="hidden">
-        <div class="spinner"></div>
-        <p>Analyzing atmosphere...</p>
+      <div id="skeleton-view" class="hidden">
+        <div class="dashboard-header">
+          <div class="location-info">
+            <div class="skeleton skeleton-title" style="width: 250px; height: 3rem; margin-bottom: 0.5rem;"></div>
+            <div class="skeleton skeleton-text" style="width: 150px;"></div>
+          </div>
+        </div>
+
+        <div class="dashboard-content">
+          <!-- AQI Skeleton -->
+          <div class="aqi-section section-card"
+            style="height: 250px; display: flex; align-items: center; justify-content: center;">
+            <div class="skeleton" style="width: 100%; height: 100%;"></div>
+          </div>
+
+          <!-- Pollutants Grid Skeleton -->
+          <div class="section-card">
+            <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 1rem;"></div>
+            <div class="metrics-grid-compact">
+              <div class="metric-item skeleton" style="height: 80px;"></div>
+              <div class="metric-item skeleton" style="height: 80px;"></div>
+              <div class="metric-item skeleton" style="height: 80px;"></div>
+              <div class="metric-item skeleton" style="height: 80px;"></div>
+              <div class="metric-item skeleton" style="height: 80px;"></div>
+              <div class="metric-item skeleton" style="height: 80px;"></div>
+            </div>
+          </div>
+
+          <!-- Tips Skeleton -->
+          <div class="section-card">
+            <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 100%; height: 150px;"></div>
+          </div>
+        </div>
+
+        <div class="dashboard-content-secondary">
+          <div class="section-card large-card" style="height: 200px;">
+            <div class="skeleton skeleton-text" style="width: 150px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 100%; height: 150px;"></div>
+          </div>
+          <div class="section-card large-card" style="height: 200px;">
+            <div class="skeleton skeleton-text" style="width: 150px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 100%; height: 150px;"></div>
+          </div>
+        </div>
       </div>
+
+      <div id="loading" class="hidden" style="display: none !important;"> <!-- Deprecated --> </div>
 
       <div id="error-message" class="hidden"></div>
 
@@ -370,11 +414,13 @@
             <span class="powered-by-trigger">Powered by ▾</span>
             <div class="powered-by-menu">
               <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo API</a>
+              <a href="https://developers.google.com/maps/documentation/pollen" target="_blank" rel="noopener">Google
+                Pollen API</a>
               <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim Geocoding</a>
             </div>
           </div>
         </div>
-        <p class="footer-copyright">&copy; 2024 Breeze. All rights reserved.</p>
+        <p class="footer-copyright">&copy; 2025 Breeze. All rights reserved.</p>
       </footer>
     </main>
 

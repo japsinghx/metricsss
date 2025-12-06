@@ -3,7 +3,8 @@ import './style.css'
 const locateBtn = document.getElementById('locate-btn');
 const locationInput = document.getElementById('location-input');
 const suggestionsList = document.getElementById('suggestions-list');
-const loadingDiv = document.getElementById('loading');
+const loadingDiv = document.getElementById('loading'); // Deprecated but kept for ref ref safety
+const skeletonView = document.getElementById('skeleton-view');
 const dashboardDiv = document.getElementById('dashboard');
 const errorDiv = document.getElementById('error-message');
 
@@ -599,26 +600,19 @@ function getAQIStatus(aqi) {
 }
 
 function showLoading() {
-  const messages = [
-    'Checking the air...',
-    'Reading conditions...',
-    'Getting data...',
-    'Analyzing atmosphere...',
-    'Measuring quality...'
-  ];
-  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+  if (skeletonView) {
+    skeletonView.classList.remove('hidden');
+    // Ensure smooth entry
+    skeletonView.style.opacity = '1';
+  }
 
-  loadingDiv.classList.remove('hidden');
+  if (loadingDiv) loadingDiv.classList.add('hidden'); // Ensure old loading is gone
   dashboardDiv.classList.add('hidden');
   errorDiv.classList.add('hidden');
-
-  const loadingText = loadingDiv.querySelector('p');
-  if (loadingText) {
-    loadingText.textContent = randomMessage;
-  }
 }
 
 function showError(msg) {
+  if (skeletonView) skeletonView.classList.add('hidden');
   loadingDiv.classList.add('hidden');
   dashboardDiv.classList.add('hidden');
   errorDiv.textContent = msg;
@@ -626,6 +620,7 @@ function showError(msg) {
 }
 
 function hideLoading() {
+  if (skeletonView) skeletonView.classList.add('hidden');
   loadingDiv.classList.add('hidden');
 }
 

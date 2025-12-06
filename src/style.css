@@ -794,9 +794,52 @@ body.dark-mode .suggestion-item.keyboard-selected {
   z-index: 10;
 }
 
-.ticker-item:active {
-  transform: scale(1.02);
+
+/* Skeleton Loading State */
+.skeleton {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  animation: shimmer 2s infinite linear;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.1) 20%, rgba(0, 0, 0, 0.06) 40%, rgba(0, 0, 0, 0.06) 100%);
+  background-repeat: no-repeat;
+  background-size: 800px 100%;
 }
+
+body.dark-mode .skeleton {
+  background: rgba(255, 255, 255, 0.08);
+  /* Lighter base for dark mode to be visible */
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.14) 20%, rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.08) 100%);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeleton-text {
+  height: 1em;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.skeleton-title {
+  height: 2rem;
+  width: 60%;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+}
+
+/* Ensure skeleton view layout matches dashboard */
+#skeleton-view {
+  width: 100%;
+}
+
 
 .ticker-city {
   font-weight: 500;

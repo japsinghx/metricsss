@@ -985,12 +985,19 @@ function updatePollenUI(data, source) {
           color: { red: 0, green: 1, blue: 0 }
         };
 
+        // Fix naming confusion for Graminales
+        // API often returns "Grasses" for GRAMINALES, which confuses it with the GRASS category
+        let displayName = plant.displayName;
+        if (plant.code === 'GRAMINALES') {
+          displayName = 'Graminales';
+        }
+
         // Store details for modal
-        currentPollenDetails[plant.code] = { ...plant, isPlant: true };
+        currentPollenDetails[plant.code] = { ...plant, displayName: displayName, isPlant: true };
 
         allItems.push({
           code: plant.code,
-          name: plant.displayName,
+          name: displayName,
           value: indexInfo.value,
           category: indexInfo.category,
           color: getGooglePollenColor(indexInfo.category),
@@ -1014,12 +1021,14 @@ function updatePollenUI(data, source) {
       <div class="pollen-compact-item">
         <div class="pollen-compact-header">
           <span class="pollen-compact-name">${item.name}</span>
-           ${item.hasDetails ? `
+          <div style="display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0;">
+             <span class="pollen-compact-value ${item.color}">${item.value}</span>
+             ${item.hasDetails ? `
             <button class="pollen-info-btn" data-code="${item.code}" aria-label="More info about ${item.name}">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </button>
           ` : ''}
-          <span class="pollen-compact-value ${item.color}">${item.value}</span>
+          </div>
         </div>
         <div class="pollen-compact-bar">
           <div class="pollen-compact-fill ${item.color}" style="width: ${(item.value / 5) * 100}%"></div>
@@ -1259,8 +1268,9 @@ function updateClimateUI(data) {
   const maxTemp = Math.max(...temps);
   const range = maxTemp - minTemp || 1;
 
-  // Calculate average warming from baseline (1980)
+  // Calculate average warming from baseline (earliest year available)
   const baseline = data[0].temp;
+  const baselineYear = data[0].year;
   const latest = data[data.length - 1].temp;
   const warming = latest - baseline;
 
@@ -1271,7 +1281,7 @@ function updateClimateUI(data) {
   climateChart.innerHTML = `
     <div class="climate-summary ${warmingClass}">
       <div class="climate-stat">
-        <span class="stat-label">Change since 1980</span>
+        <span class="stat-label">Change since ${baselineYear}</span>
         <span class="stat-value">${warming > 0 ? '+' : ''}${warmingDisplay}${unit}</span>
       </div>
     </div>

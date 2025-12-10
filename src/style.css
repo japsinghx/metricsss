@@ -412,7 +412,7 @@ body.dark-mode .moon-icon {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 0.5rem 1.25rem;
+  padding: 0.75rem 1.25rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
@@ -433,7 +433,7 @@ body.dark-mode .moon-icon {
 }
 
 #app.has-results .search-container {
-  padding: 0.375rem 1rem;
+  padding: 0.5rem 1rem;
   border-radius: 14px;
 }
 
@@ -1487,7 +1487,7 @@ body.dark-mode .app-footer {
 
 /* About & Contact Pages */
 .page-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
   flex: 1;
@@ -1583,6 +1583,8 @@ body.dark-mode .app-footer {
   gap: 1.5rem;
   padding: 1.5rem 0;
   border-bottom: 1px solid var(--border-color);
+  flex-wrap: nowrap;
+  align-items: flex-start;
 }
 
 .contact-method:last-of-type {
@@ -1601,6 +1603,11 @@ body.dark-mode .app-footer {
   color: var(--primary);
 }
 
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .contact-info h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.125rem;
@@ -1608,6 +1615,13 @@ body.dark-mode .app-footer {
 
 .contact-info p {
   margin: 0.25rem 0;
+}
+
+.contact-info p a {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .contact-description {
@@ -1639,8 +1653,12 @@ body.dark-mode .app-footer {
     font-size: 2.5rem;
   }
 
-  .contact-method {
-    flex-direction: column;
+  .page-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .content-section {
+    padding: 1.5rem;
   }
 }
 
@@ -2026,6 +2044,11 @@ span.level-extreme {
   color: var(--text-color);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pollen-compact-value {
@@ -2323,8 +2346,8 @@ span.uv-label.uv-extreme {
 }
 
 .climate-summary.cooling {
-  border-color: var(--aqi-good);
-  background: rgba(52, 199, 89, 0.05);
+  border-color: #0071e3;
+  background: rgba(0, 113, 227, 0.05);
 }
 
 .climate-stat {
@@ -2353,7 +2376,7 @@ span.uv-label.uv-extreme {
 }
 
 .cooling .stat-value {
-  color: var(--aqi-good);
+  color: #0071e3;
 }
 
 .stable .stat-value {
@@ -2399,15 +2422,15 @@ span.uv-label.uv-extreme {
 }
 
 .climate-bar.climate-cool {
-  background: linear-gradient(to top, #34c759, #30d158);
-}
-
-.climate-bar.climate-neutral {
   background: linear-gradient(to top, #0071e3, #0077ed);
 }
 
+.climate-bar.climate-neutral {
+  background: linear-gradient(to top, #d4a500, #e6b800);
+}
+
 .climate-bar.climate-warm {
-  background: linear-gradient(to top, #ff9500, #ffb340);
+  background: linear-gradient(to top, #d4a500, #e6b800);
 }
 
 .climate-bar.climate-hot {

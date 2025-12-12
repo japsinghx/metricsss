@@ -590,56 +590,56 @@ function getAQIStatus(aqi) {
       text: 'Excellent ✨',
       description: 'Air quality is pristine! Perfect day for adventures.',
       color: 'var(--aqi-good)',
-      tips: ['Go outside and soak it all in! 🌟', 'Perfect time for that morning jog! 🏃', 'Windows open, fresh air flowing! 🪟']
+      tips: ['Air is exceptionally clean right now 🌟', 'No air quality concerns at this level 🌬️']
     };
   } else if (aqi <= 50) {
     return {
       text: 'Good 😊',
       description: 'Air quality is great. Breathe easy!',
       color: 'var(--aqi-good)',
-      tips: ['Open those windows! 🪟', 'Great day for outdoor activities! ⚽', 'Take a deep breath and enjoy! 🌬️']
+      tips: ['Air quality meets health standards 👍', 'Pollutant levels are low ✨', 'No health risks from air quality 🌬️']
     };
   } else if (aqi <= 75) {
     return {
       text: 'Moderate 😐',
       description: 'Air quality is acceptable for most people.',
       color: 'var(--aqi-moderate)',
-      tips: ['Sensitive folks, take it easy! 🤔', 'Maybe skip that marathon today 🏃‍♀️', 'Still pretty good for most activities!']
+      tips: ['Air quality is acceptable for most 👍', 'Unusually sensitive people may experience minor effects 🤔', 'Pollutant levels are within moderate range ✓']
     };
   } else if (aqi <= 100) {
     return {
       text: 'Slightly High 😕',
       description: 'Getting a bit iffy for sensitive groups.',
       color: 'var(--aqi-moderate)',
-      tips: ['If you have asthma, keep that inhaler handy! 💨', 'Light outdoor activities are okay 👍', 'Stay hydrated! 💧']
+      tips: ['Sensitive groups may experience respiratory symptoms 💨', 'Air pollutants are at elevated levels 📊', 'Those with asthma should have medication available 💊']
     };
   } else if (aqi <= 150) {
     return {
       text: 'Unhealthy for Sensitive Groups 😷',
       description: 'Sensitive groups should be cautious.',
       color: 'var(--aqi-unhealthy-sensitive)',
-      tips: ['Kids and elderly, maybe stay inside 🏠', 'Asthma? Keep medicine close! 💊', 'Cut that outdoor workout short ⏱️']
+      tips: ['Air quality may affect children, elderly, and those with respiratory conditions 🏠', 'Pollutant concentrations are unhealthy for sensitive groups ⚠️', 'Consider using air purifiers indoors 💨']
     };
   } else if (aqi <= 200) {
     return {
       text: 'Unhealthy 😨',
       description: 'Everyone may feel the effects now.',
       color: 'var(--aqi-unhealthy)',
-      tips: ['Indoor day, folks! 🏠', 'Mask up if you must go out 😷', 'Windows closed, please! 🚪']
+      tips: ['Air quality is unhealthy for everyone 🚨', 'Keeping windows closed will help maintain indoor air quality 🚪', 'Wearing masks can reduce exposure to pollutants 😷']
     };
   } else if (aqi <= 300) {
     return {
       text: 'Very Unhealthy 🚨',
       description: 'Serious health concerns for everyone.',
       color: 'var(--aqi-very-unhealthy)',
-      tips: ['Stay inside! Not a suggestion! 🛑', 'Air purifier time! 💨', 'Seal those windows ASAP! 🔒']
+      tips: ['Air pollutants are at dangerous levels 🛑', 'Indoor air quality is significantly better than outdoor 🏠', 'Air purifiers can help reduce indoor pollutant levels 💨']
     };
   } else {
     return {
       text: 'Hazardous ☠️',
       description: 'Emergency conditions. Seriously bad air.',
       color: 'var(--aqi-hazardous)',
-      tips: ['STAY INSIDE. Really. 🏠', 'N95 mask minimum if you go out 😷', 'Air purifier on full blast! 💨', 'Check on your neighbors! 👥']
+      tips: ['Air quality has reached hazardous levels ⚠️', 'Outdoor air contains dangerous pollutant concentrations 🏠', 'N95 masks filter harmful particles from the air 😷', 'Air purifiers on high settings can improve indoor air 💨']
     };
   }
 }

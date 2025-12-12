@@ -1287,6 +1287,53 @@ body.dark-mode .skeleton {
   color: var(--text-color);
 }
 
+/* Status Badge Button Styles */
+.metric-info-btn {
+  padding: 0.25rem 0.75rem !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 50px !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.metric-info-btn:hover {
+  transform: scale(1.05) !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.metric-info-btn .link-text {
+  text-decoration: none !important;
+}
+
+.metric-item.status-good .metric-info-btn {
+  color: var(--aqi-good) !important;
+  background: rgba(52, 199, 89, 0.1) !important;
+}
+
+.metric-item.status-good .metric-info-btn:hover {
+  background: rgba(52, 199, 89, 0.2) !important;
+}
+
+.metric-item.status-moderate .metric-info-btn {
+  color: var(--aqi-moderate) !important;
+  background: rgba(255, 149, 0, 0.1) !important;
+}
+
+.metric-item.status-moderate .metric-info-btn:hover {
+  background: rgba(255, 149, 0, 0.2) !important;
+}
+
+.metric-item.status-poor .metric-info-btn {
+  color: var(--aqi-unhealthy) !important;
+  background: rgba(255, 59, 48, 0.1) !important;
+}
+
+.metric-item.status-poor .metric-info-btn:hover {
+  background: rgba(255, 59, 48, 0.2) !important;
+}
+
 /* Health Tips List */
 .health-tips-list {
   list-style: none;

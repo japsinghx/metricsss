@@ -561,6 +561,7 @@ function updateUI(data, locationName) {
 function updatePollutant(id, value, goodLimit, moderateLimit) {
   const valEl = document.getElementById(`${id}-val`);
   const cardEl = document.getElementById(`${id}-card`);
+  const statusEl = document.getElementById(`${id}-status`);
 
   if (!valEl || !cardEl) return;
 
@@ -573,13 +574,23 @@ function updatePollutant(id, value, goodLimit, moderateLimit) {
   // Remove existing status classes
   cardEl.classList.remove('status-good', 'status-moderate', 'status-poor');
 
+  let statusText = '';
+
   // Determine status
   if (value <= goodLimit) {
     cardEl.classList.add('status-good');
+    statusText = 'Good';
   } else if (value <= moderateLimit) {
     cardEl.classList.add('status-moderate');
+    statusText = 'Moderate';
   } else {
     cardEl.classList.add('status-poor');
+    statusText = 'Unhealthy';
+  }
+
+  // Update status text
+  if (statusEl) {
+    statusEl.textContent = statusText;
   }
 }
 

@@ -237,7 +237,7 @@ main {
 
 header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   transition: all 0.5s cubic-bezier(0.28, 0, 0.63, 1);
   animation: headerFadeIn 1s ease-out;
 }
@@ -274,9 +274,15 @@ header h1 {
 }
 
 header p {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 400;
   color: var(--text-muted);
+}
+
+/* Apple-style animated text - JavaScript driven */
+header p.animated-text {
+  opacity: 0;
+  /* Will be set to 1 by JavaScript */
 }
 
 #app.has-results header p {
@@ -399,7 +405,7 @@ body.dark-mode .moon-icon {
   margin: 0 auto;
   transition: all 0.4s cubic-bezier(0.28, 0, 0.63, 1);
   position: relative;
-  z-index: 200;
+  z-index: 50;
 }
 
 #app.has-results .search-section {
@@ -411,7 +417,7 @@ body.dark-mode .moon-icon {
   align-items: center;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 50px;
   padding: 0.75rem 1.25rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -434,7 +440,7 @@ body.dark-mode .moon-icon {
 
 #app.has-results .search-container {
   padding: 0.5rem 1rem;
-  border-radius: 14px;
+  border-radius: 50px;
 }
 
 .search-container:focus-within {

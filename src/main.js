@@ -142,6 +142,51 @@ async function initializeTicker() {
 // Load ticker when page loads
 initializeTicker();
 
+// Apple-style letter-by-letter typing animation
+function appleTypewriterEffect() {
+  const animatedText = document.querySelector('.animated-text');
+  if (!animatedText) return;
+
+  const originalText = animatedText.textContent;
+  animatedText.textContent = '';
+  animatedText.style.opacity = '1'; // Make container visible
+
+  // Split text into characters
+  const characters = originalText.split('');
+
+  // Create spans for each character
+  characters.forEach((char, index) => {
+    const span = document.createElement('span');
+    span.textContent = char;
+    span.style.opacity = '0';
+    span.style.display = 'inline-block';
+    span.style.transform = 'translateY(20px)';
+    span.style.filter = 'blur(8px)';
+    span.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+
+    // Preserve spaces
+    if (char === ' ') {
+      span.style.width = '0.3em';
+    }
+
+    animatedText.appendChild(span);
+
+    // Animate each character with delay
+    setTimeout(() => {
+      span.style.opacity = '1';
+      span.style.transform = 'translateY(0)';
+      span.style.filter = 'blur(0)';
+    }, index * 120); // 120ms delay between each character for a slower, more elegant reveal
+  });
+}
+
+// Run the animation when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', appleTypewriterEffect);
+} else {
+  appleTypewriterEffect();
+}
+
 let debounceTimer;
 let selectedSuggestionIndex = -1;
 
@@ -563,7 +608,7 @@ function getAQIStatus(aqi) {
     };
   } else if (aqi <= 100) {
     return {
-      text: 'Moderately High 😕',
+      text: 'Slightly High 😕',
       description: 'Getting a bit iffy for sensitive groups.',
       color: 'var(--aqi-moderate)',
       tips: ['If you have asthma, keep that inhaler handy! 💨', 'Light outdoor activities are okay 👍', 'Stay hydrated! 💧']

@@ -929,30 +929,17 @@ if (fastForwardBtn) {
 // --- Environmental Insights Functions ---
 
 async function fetchPollen(lat, lon) {
-  // Try Google Pollen API first (if API key is configured)
-  const googleApiKey = import.meta.env.VITE_GOOGLE_POLLEN_API_KEY;
-
-  console.log('Pollen API Key check:', {
-    exists: !!googleApiKey,
-    length: googleApiKey?.length,
-    firstChars: googleApiKey?.substring(0, 10),
-    isPlaceholder: googleApiKey === 'your_api_key_here'
-  });
-
-  if (googleApiKey && googleApiKey !== 'your_api_key_here') {
-    try {
-      console.log('Attempting Google Pollen API with coords:', { lat, lon });
-      const googleData = await fetchGooglePollen(lat, lon, googleApiKey);
-      console.log('Google Pollen API returned:', googleData);
-      if (googleData) {
-        updatePollenUI(googleData, 'google');
-        return;
-      }
-    } catch (err) {
-      console.warn('Google Pollen API failed, falling back to Open-Meteo:', err);
+  // Try Google Pollen API via backend proxy
+  try {
+    console.log('Attempting Google Pollen API via proxy with coords:', { lat, lon });
+    const googleData = await fetchGooglePollen(lat, lon);
+    console.log('Google Pollen API returned:', googleData);
+    if (googleData) {
+      updatePollenUI(googleData, 'google');
+      return;
     }
-  } else {
-    console.log('No valid Google API key, using Open-Meteo fallback');
+  } catch (err) {
+    console.warn('Google Pollen API failed, falling back to Open-Meteo:', err);
   }
 
   // Fallback to Open-Meteo (Europe only)
@@ -970,9 +957,9 @@ async function fetchPollen(lat, lon) {
   }
 }
 
-async function fetchGooglePollen(lat, lon, apiKey) {
-  // Use GET method with URL parameters (like the working curl command)
-  const url = `https://pollen.googleapis.com/v1/forecast:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lon}&days=1&languageCode=en`;
+async function fetchGooglePollen(lat, lon) {
+  // Use backend proxy to keep API key secure
+  const url = `/api/pollen?lat=${lat}&lon=${lon}`;
 
   const response = await fetch(url, {
     method: 'GET'
@@ -980,12 +967,12 @@ async function fetchGooglePollen(lat, lon, apiKey) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Google Pollen API error:', response.status, errorText);
-    throw new Error(`Google Pollen API error: ${response.status}`);
+    console.error('Pollen proxy error:', response.status, errorText);
+    throw new Error(`Pollen proxy error: ${response.status}`);
   }
 
   const data = await response.json();
-  console.log('Google Pollen API response:', data); // Debug log
+  console.log('Pollen API response:', data); // Debug log
 
   // Transform Google's format to our format
   if (data.dailyInfo && data.dailyInfo.length > 0) {
